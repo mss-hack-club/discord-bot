@@ -1,5 +1,8 @@
 import Discord from "discord.js";
 import * as dotenv from "dotenv";
+import glob from "glob";
+import { promisify } from "util";
+import { ICommand } from "./utils/interfaces";
 
 dotenv.config();
 
@@ -19,11 +22,26 @@ const client: Discord.Client = new Discord.Client({
   ],
 });
 
+const commands: Array<ICommand> = [];
+const globPromise = promisify(glob);
+
+(async () => {
+  const commandFiles = await globPromise(`${__dirname}/commands/**/*.{js,ts}`);
+
+  for (const file of commandFiles) {
+    console.log(file);
+    const command = await import(file);
+    commands.push(command);
+    console.log(`Command ${command.name} loaded successfully.`);
+  }
+})();
+
 client.on("ready", () => {
   console.log(`Logged in as ${client.user!.tag}!`);
+  console.log(`Currently in ${client.guilds.cache.size} servers.`);
 });
 
-client.on("message", async (message: Discord.Message) => {
+client.on("messageCreate", async (message: Discord.Message) => {
   if (
     !message.content.toLowerCase().startsWith(prefix) ||
     message.author.bot ||
@@ -36,11 +54,28 @@ client.on("message", async (message: Discord.Message) => {
     return;
   }
 
-  if (message.content.includes("ping")) {
-    message.channel.send("Pong");
+  // parse the message for the command
+  const [commandName, ...args] = message.content
+    .slice(prefix.length)
+    .trim()
+    .split(/ +/);
+
+  console.log(`Potential command name: ${commandName}`);
+  console.log(`Potential arugments: ${args}`);
+
+  const command = commands.find(
+    (c) =>
+      c.name === commandName ||
+      (c.aliases ? c.aliases!.includes(commandName) : false)
+  );
+
+  // if the command is found, execute it
+  if (command) {
+    command.execute(message, args);
+  } else {
+    console.log("No command found, ignoring message.");
   }
 });
-
 
 (async () => {
   try {

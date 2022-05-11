@@ -29,7 +29,6 @@ const globPromise = promisify(glob);
   const commandFiles = await globPromise(`${__dirname}/commands/**/*.{js,ts}`);
 
   for (const file of commandFiles) {
-    console.log(file);
     const command = await import(file);
     commands.push(command);
     console.log(`Command ${command.name} loaded successfully.`);
@@ -85,3 +84,16 @@ client.on("messageCreate", async (message: Discord.Message) => {
     console.log(error);
   }
 })();
+
+
+// CATEGORY 1 - Pure Discord
+// 1. creating and assigning a role
+// 2. ban people
+// 3. kick
+// 4. delete role
+// change a role's name
+
+// CATEGORY 2 - use an external
+// 1. Translation
+// 2. Definition
+// 3. Weather

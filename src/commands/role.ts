@@ -140,3 +140,5 @@ const command: ICommand = {
 };
 
 export = command;
+
+// define

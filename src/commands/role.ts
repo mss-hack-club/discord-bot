@@ -107,6 +107,11 @@ const command: ICommand = {
             user?.user.tag
           } in guild ${message.guild}.`
         );
+
+        await message.channel.send(
+          `Added role ${newRole!.name} to member ${user?.user.tag}.`
+        );
+
         console.log(
           `Command role, started by user ${
             message.member!.user.tag
